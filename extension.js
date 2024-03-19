@@ -20,51 +20,19 @@
 
 'use strict';
 
-const { main: Main } = imports.ui;
-
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-
-const { LoadingSpinner } = Me.imports.src.loadingSpinner;
+const { LoadingSpinner } = imports.misc.extensionUtils.getCurrentExtension().imports.src.loadingSpinner;
 
 class Extension {
     constructor() {
     }
 
     enable() {
-        this._settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
-
-        this._settings.connect('changed::animation-file', () => {
-            this._loadingSpinner.destroy();
-            this._loadingSpinner = new LoadingSpinner();
-        });
         this._loadingSpinner = new LoadingSpinner();
-
-        this._settings.connect('changed::hide-app-menu', () => this._setAppMenu());
-        this._setAppMenu();
     }
 
     disable() {
-        this._settings.run_dispose();
-        this._settings = null;
-
-        this._loadingSpinner.destroy();
+       this._loadingSpinner.destroy();
         this._loadingSpinner = null;
-
-        // Looks like g-s updates the top panel after the extensions are disabled
-        // so we want to exit early here otherwise the appMenu will be shown on
-        // the lockscreen while the extension is enabled...
-        if (Main.sessionMode.isLocked)
-            return;
-
-        Main.panel.statusArea['appMenu'].container.show();
-    }
-
-    _setAppMenu() {
-        if (this._settings.get_boolean('hide-app-menu'))
-            Main.panel.statusArea['appMenu'].container.hide();
-        else
-            Main.panel.statusArea['appMenu'].container.show();
     }
 }
 

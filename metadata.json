@@ -1,9 +1,8 @@
 {
-  "name": "Replace Activities Label",
-  "description": "Remove the AppMenu, replace the activities label with 3 dots and animate them as a loading spinner.",
-  "uuid": "replace-activities-label@leleat-on-github",
-  "settings-schema": "org.gnome.shell.extensions.replace-activities-label",
-  "url": "https://github.com/Leleat/replace-activities-label",
+  "name": "Customize Activities label",
+  "description": "GNOME Shell extension to display an animated icon instead of the \"Activities\" label when an application is loading.",
+  "uuid": "animate-activities-label-on-applications-loading@tvataire",
+  "url": "https://github.com/tvataire/animate-activities-label-on-applications-loading",
   "shell-version": [
     "43",
     "44"

@@ -7,20 +7,19 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 cd $SCRIPT_DIR/
 
-# create extension zip including the schemas
+# create extension zip
 echo Packaging extension...
 gnome-extensions pack . \
     --force \
-    --extra-source="src" \
-    --extra-source="prefs.ui"
+    --extra-source="src"
 echo Packaging complete.
 
 while getopts i FLAG; do
     case $FLAG in
 
         i)  echo Installing extension...
-            gnome-extensions install --force replace-activities-label@leleat-on-github.shell-extension.zip && \
-            rm -f replace-activities-label@leleat-on-github.shell-extension.zip && \
+            gnome-extensions install --force animate-activities-label-on-applications-loading@tvataire.shell-extension.zip && \
+            rm -f animate-activities-label-on-applications-loading@tvataire.shell-extension.zip && \
             echo Installation complete. Restart GNOME Shell and enable the extension to use it. || \
             exit 1;;
 
