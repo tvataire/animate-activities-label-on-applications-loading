@@ -31,7 +31,7 @@ class Extension {
     }
 
     disable() {
-       this._loadingSpinner.destroy();
+        this._loadingSpinner.destroy();
         this._loadingSpinner = null;
     }
 }
