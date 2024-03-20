@@ -44,8 +44,8 @@ class LoadingSpinnerRAL extends Clutter.Actor {
 
         this._isLoadingSpinner = true;
         this._activityButton.add_child(this._spinner);
-        this._activityButton.remove_child(this._activityLabel);
         this._spinner.play();
+        this._activityButton.remove_child(this._activityLabel);
     }
 
     _stopAnimation() {
@@ -53,9 +53,9 @@ class LoadingSpinnerRAL extends Clutter.Actor {
             return;
 
         this._isLoadingSpinner = false;
-        this._spinner.stop();
         this._activityButton.add_child(this._activityLabel);
         this._activityButton.remove_child(this._spinner);
+        this._spinner.stop();
     }
 
     /**
