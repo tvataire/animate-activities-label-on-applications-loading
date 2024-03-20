@@ -1,7 +1,7 @@
 'use strict';
 
-const { Clutter, Gio, GLib, GObject, Graphene, Shell, St } = imports.gi;
-const { animation: Animation, main: Main } = imports.ui;
+const { Clutter, GObject, Graphene, Shell, St } = imports.gi;
+const { main: Main } = imports.ui;
 
 var LoadingSpinner = GObject.registerClass(
 class LoadingSpinnerRAL extends Clutter.Actor {
@@ -14,20 +14,7 @@ class LoadingSpinnerRAL extends Clutter.Actor {
         this._activityButton = Main.panel.statusArea['activities'];
         this._activityLabel = this._activityButton.get_children()[0];
 
-        this._spinner = null;
-
-        try {
-            const ExtensionUtils = imports.misc.extensionUtils;
-            const Me = ExtensionUtils.getCurrentExtension();
-            const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
-            const animtionSVG = settings.get_string('animation-file');
-            this._spinner = animtionSVG ? new Spinner2(animtionSVG) : new Spinner();
-        } catch (error) {
-            this._spinner = new Spinner();
-        }
-
-        this._activityButton.remove_child(this._activityLabel);
-        this._activityButton.add_child(this._spinner);
+        this._spinner = new Spinner();
 
         this._stateChangeId = Shell.AppSystem.get_default()
             .connect('app-state-changed', (_, app) => this._onAppStateChanged(app));
@@ -42,7 +29,6 @@ class LoadingSpinnerRAL extends Clutter.Actor {
         this._spinner.destroy();
         this._spinner = null;
 
-        this._activityButton.add_child(this._activityLabel);
         this._activityLabel = null;
         this._activityButton = null;
 
@@ -57,6 +43,8 @@ class LoadingSpinnerRAL extends Clutter.Actor {
             return;
 
         this._isLoadingSpinner = true;
+        this._activityButton.add_child(this._spinner);
+        this._activityButton.remove_child(this._activityLabel);
         this._spinner.play();
     }
 
@@ -66,6 +54,8 @@ class LoadingSpinnerRAL extends Clutter.Actor {
 
         this._isLoadingSpinner = false;
         this._spinner.stop();
+        this._activityButton.add_child(this._activityLabel);
+        this._activityButton.remove_child(this._spinner);
     }
 
     /**
@@ -84,10 +74,8 @@ class LoadingSpinnerRAL extends Clutter.Actor {
     }
 
     _findTargetApp() {
-        const workspaceManager = global.workspace_manager;
-        const workspace = workspaceManager.get_active_workspace();
-        const tracker = Shell.WindowTracker.get_default();
-        const focusedApp = tracker.focus_app;
+        const workspace = global.workspace_manager.get_active_workspace();
+        const focusedApp = Shell.WindowTracker.get_default().focus_app;
         if (focusedApp && focusedApp.is_on_workspace(workspace))
             return focusedApp;
 
@@ -264,61 +252,5 @@ class SpinnerRAL extends St.BoxLayout {
             scale_y: 1,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
-    }
-});
-
-const Spinner2 = GObject.registerClass(
-class Spinner2RAL extends Animation.AnimatedIcon {
-    _init(filePath) {
-        const file = Gio.File.new_for_uri(`file://${filePath}`);
-
-        if (!filePath.endsWith('.svg') && !filePath.endsWith('.png') || !file.query_exists(null))
-            throw new Error('Replace Activities Label: Only svg file allowed for animation...');
-
-        super._init(file, 16);
-
-        // Show after frames were loaded
-        const id = this._animations.connect('actor-added', () => {
-            this._animations.disconnect(id);
-            this._showFrame(0);
-        });
-    }
-
-    _onDestroy() {
-        if (this._timeoutId > 0) {
-            GLib.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
-
-        this._isPlaying = false;
-    }
-
-    play(loop = true) {
-        if (this._isLoaded && this._timeoutId == 0) {
-            if (this._frame == 0)
-                this._showFrame(0);
-
-            this._timeoutId = GLib.timeout_add(GLib.PRIORITY_LOW, this._speed, this._update.bind(this, loop));
-            GLib.Source.set_name_by_id(this._timeoutId, '[gnome-shell] this._update');
-        }
-
-        this._isPlaying = true;
-    }
-
-    stop() {
-        super.stop();
-
-        // Finish last animation cycle
-        this.play(false);
-    }
-
-    _update(loop) {
-        const atLastFrame = (this._frame + 1) % this._animations.get_n_children() === 0;
-        if (!loop && atLastFrame)
-            super.stop();
-        else
-            this._showFrame(this._frame + 1);
-
-        return GLib.SOURCE_CONTINUE;
     }
 });
